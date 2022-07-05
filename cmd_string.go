@@ -469,6 +469,7 @@ func (m *Miniredis) cmdGetex(c *server.Peer, cmd string, args []string) {
 		switch {
 		case opts.persist:
 			delete(db.ttl, opts.key)
+			delete(db.setTtl, opts.key)
 		case opts.ttl != 0:
 			db.ttl[opts.key] = opts.ttl
 		}
@@ -510,6 +511,7 @@ func (m *Miniredis) cmdGetset(c *server.Peer, cmd string, args []string) {
 		db.stringSet(key, value)
 		// a GETSET clears the ttl
 		delete(db.ttl, key)
+		delete(db.setTtl, key)
 
 		if !ok {
 			c.WriteNull()
