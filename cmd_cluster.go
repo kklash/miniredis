@@ -4,8 +4,9 @@ package miniredis
 
 import (
 	"fmt"
-	"github.com/alicebob/miniredis/v2/server"
 	"strings"
+
+	"github.com/kklash/miniredis/v2/server"
 )
 
 // commandsCluster handles some cluster operations.

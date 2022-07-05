@@ -13,8 +13,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/alicebob/miniredis/v2"
-	"github.com/alicebob/miniredis/v2/proto"
+	"github.com/kklash/miniredis/v2"
+	"github.com/kklash/miniredis/v2/proto"
 )
 
 func testRaw(t *testing.T, cb func(*client)) {

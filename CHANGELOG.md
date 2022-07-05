@@ -213,4 +213,4 @@ Proper `v2` in go.mod.
 
 ### older
 
-See https://github.com/alicebob/miniredis/releases for the full changelog
+See https://github.com/kklash/miniredis/releases for the full changelog

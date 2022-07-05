@@ -2,7 +2,7 @@
 
 package miniredis
 
-import "github.com/alicebob/miniredis/v2/server"
+import "github.com/kklash/miniredis/v2/server"
 
 func commandsCommand(m *Miniredis) {
 	_ = m.srv.Register("COMMAND", m.cmdCommand)
