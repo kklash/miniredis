@@ -214,6 +214,7 @@ func (m *Miniredis) cmdPersist(c *server.Peer, cmd string, args []string) {
 			return
 		}
 		delete(db.ttl, key)
+		delete(db.setTtl, key)
 		db.keyVersion[key]++
 		c.WriteInt(1)
 	})

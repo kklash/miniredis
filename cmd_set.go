@@ -5,6 +5,7 @@ package miniredis
 import (
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/alicebob/miniredis/v2/server"
 )
@@ -15,6 +16,7 @@ func commandsSet(m *Miniredis) {
 	m.srv.Register("SCARD", m.cmdScard)
 	m.srv.Register("SDIFF", m.cmdSdiff)
 	m.srv.Register("SDIFFSTORE", m.cmdSdiffstore)
+	m.srv.Register("EXPIREMEMBER", m.cmdExpireMember)
 	m.srv.Register("SINTER", m.cmdSinter)
 	m.srv.Register("SINTERSTORE", m.cmdSinterstore)
 	m.srv.Register("SISMEMBER", m.cmdSismember)
@@ -151,6 +153,58 @@ func (m *Miniredis) cmdSdiffstore(c *server.Peer, cmd string, args []string) {
 		db.del(dest, true)
 		db.setSet(dest, set)
 		c.WriteInt(len(set))
+	})
+}
+
+// EXPIREMEMBER
+func (m *Miniredis) cmdExpireMember(c *server.Peer, cmd string, args []string) {
+	if len(args) < 3 {
+		setDirty(c)
+		c.WriteError(errWrongNumber(cmd))
+		return
+	}
+	if !m.handleAuth(c) {
+		return
+	}
+	if m.checkPubsub(c, cmd) {
+		return
+	}
+
+	key := args[0]
+	subkey := args[1]
+	ttl, err := strconv.Atoi(args[2])
+	if err != nil {
+		setDirty(c)
+		c.WriteError(msgInvalidInt)
+		return
+	}
+
+	base := time.Second
+	if len(args) > 3 && args[3] == "ms" {
+		base = time.Millisecond
+	}
+
+	withTx(m, c, func(c *server.Peer, ctx *connCtx) {
+		db := m.db(ctx.selectedDB)
+
+		// Key must be present.
+		if _, ok := db.keys[key]; !ok {
+			c.WriteInt(0)
+			return
+		}
+
+		t := db.t(key)
+		if t != "set" && t != "zset" {
+			c.WriteError(msgWrongType)
+			return
+		}
+
+		if _, ok := db.setTtl[key]; !ok {
+			db.setTtl[key] = map[string]time.Duration{}
+		}
+		db.setTtl[key][subkey] = time.Duration(ttl) * base
+
+		c.WriteInt(1)
 	})
 }
 

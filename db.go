@@ -43,6 +43,7 @@ func (db *RedisDB) flush() {
 	db.hllKeys = map[string]*hll{}
 	db.sortedsetKeys = map[string]sortedSet{}
 	db.ttl = map[string]time.Duration{}
+	db.setTtl = map[string]map[string]time.Duration{}
 	db.streamKeys = map[string]*streamKey{}
 }
 
@@ -79,6 +80,9 @@ func (db *RedisDB) move(key string, to *RedisDB) bool {
 	if v, ok := db.ttl[key]; ok {
 		to.ttl[key] = v
 	}
+	if v, ok := db.setTtl[key]; ok {
+		to.setTtl[key] = v
+	}
 	db.del(key, true)
 	return true
 }
@@ -108,6 +112,9 @@ func (db *RedisDB) rename(from, to string) {
 	if v, ok := db.ttl[from]; ok {
 		db.ttl[to] = v
 	}
+	if v, ok := db.setTtl[from]; ok {
+		db.setTtl[to] = v
+	}
 
 	db.del(from, true)
 }
@@ -121,6 +128,7 @@ func (db *RedisDB) del(k string, delTTL bool) {
 	db.keyVersion[k]++
 	if delTTL {
 		delete(db.ttl, k)
+		delete(db.setTtl, k)
 	}
 	switch t {
 	case "string":
@@ -631,6 +639,23 @@ func (db *RedisDB) fastForward(duration time.Duration) {
 		if value, ok := db.ttl[key]; ok {
 			db.ttl[key] = value - duration
 			db.checkTTL(key)
+		}
+
+		if memberTTLs, ok := db.setTtl[key]; ok {
+			expiredMembers := []string{}
+			for member, ttl := range memberTTLs {
+				diff := ttl - duration
+				if diff < 0 {
+					expiredMembers = append(expiredMembers, member)
+					delete(memberTTLs, member)
+				} else {
+					memberTTLs[member] = diff
+				}
+			}
+			db.setRem(key, expiredMembers...)
+			if len(memberTTLs) == 0 {
+				delete(db.setTtl, key)
+			}
 		}
 	}
 }

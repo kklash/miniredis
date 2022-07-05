@@ -3,6 +3,7 @@ package miniredis
 import (
 	"sort"
 	"testing"
+	"time"
 
 	"github.com/alicebob/miniredis/v2/proto"
 )
@@ -515,6 +516,45 @@ func TestSdiffstore(t *testing.T) {
 		mustDo(t, c,
 			"SDIFFSTORE", "t", "str",
 			proto.Error(msgWrongType),
+		)
+	})
+}
+
+// Test EXPIREMEMBER
+func TestExpireMember(t *testing.T) {
+	s, err := Run()
+	ok(t, err)
+	defer s.Close()
+	c, err := proto.Dial(s.Addr())
+	ok(t, err)
+	defer c.Close()
+
+	s.SetAdd("s1", "aap", "noot", "mies")
+	s.SetAdd("s2", "noot", "mies", "vuur")
+	// s.SetAdd("s3", "aap", "mies", "wim")
+
+	mustDo(t, c,
+		"EXPIREMEMBER", "s1", "aap", "2",
+		proto.Int(1),
+	)
+	s.FastForward(1 * time.Second)
+	s.CheckSet(t, "s1", "aap", "noot", "mies")
+	s.CheckSet(t, "s2", "noot", "mies", "vuur")
+
+	s.FastForward(2 * time.Second)
+	s.CheckSet(t, "s1", "noot", "mies")
+	s.CheckSet(t, "s2", "noot", "mies", "vuur")
+
+	t.Run("errors", func(t *testing.T) {
+		s.Set("str", "value")
+
+		mustDo(t, c,
+			"EXPIREMEMBER", "str", "foo", "1",
+			proto.Error(msgWrongType),
+		)
+		mustDo(t, c,
+			"EXPIREMEMBER", "1",
+			proto.Error(errWrongNumber("expiremember")),
 		)
 	})
 }
