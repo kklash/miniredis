@@ -3,7 +3,7 @@ package miniredis
 import (
 	"fmt"
 
-	"github.com/alicebob/miniredis/v2/server"
+	"github.com/kklash/miniredis/v2/server"
 )
 
 // Command 'INFO' from https://redis.io/commands/info/

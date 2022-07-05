@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/alicebob/miniredis/v2/server"
+	"github.com/kklash/miniredis/v2/server"
 )
 
 // commandsStream handles all stream operations.

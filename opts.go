@@ -3,7 +3,7 @@ package miniredis
 import (
 	"strconv"
 
-	"github.com/alicebob/miniredis/v2/server"
+	"github.com/kklash/miniredis/v2/server"
 )
 
 // optInt parses an int option in a command.

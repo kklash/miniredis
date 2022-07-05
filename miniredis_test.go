@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alicebob/miniredis/v2/proto"
-	"github.com/alicebob/miniredis/v2/server"
+	"github.com/kklash/miniredis/v2/proto"
+	"github.com/kklash/miniredis/v2/server"
 )
 
 // Test starting/stopping a server

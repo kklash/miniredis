@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/alicebob/miniredis/v2/server"
+	"github.com/kklash/miniredis/v2/server"
 )
 
 // commandsSet handles all set value operations.

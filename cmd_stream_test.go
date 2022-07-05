@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alicebob/miniredis/v2/proto"
+	"github.com/kklash/miniredis/v2/proto"
 )
 
 // Test XADD / XLEN / XRANGE
